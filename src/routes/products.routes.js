@@ -1,71 +1,95 @@
-import { Router } from "express";
-import productModel from "../models/products.models.js";
+import { Router } from 'express'
+import ProductModel from '../models/products.models.js'
 
 const productRouter = Router()
 
+// Route to get all the products
 productRouter.get('/', async (req, res) => {
-    const { limit } = req.query
-    try {
-        const prods = await productModel.find().limit(limit)
-        res.status(200).send({ resultado: 'OK', message: prods })
-    } catch (error) {
-        res.status(400).send({ error: `Error al consultar productos: ${error}` })
-    }
+  const { limit } = req.query
+
+  try {
+    const foundProducts = await ProductModel.find().limit(limit)
+
+    res.status(200).send({ result: "OK", message: foundProducts })
+  }
+
+  catch (error) {
+    res.status(400).send({ error: `Error consulting the products: ${error}` })
+  }
 })
 
-productRouter.get('/:id', async (req, res) => {
-    const { id } = req.params
-    try {
-        const prod = await productModel.findById(id)
-        if (prod)
-            res.status(200).send({ resultado: 'OK', message: prod })
-        else
-            res.status(404).send({ resultado: 'Not Found', message: prod })
-    } catch (error) {
-        res.status(400).send({ error: `Error al consultar producto: ${error}` })
-    }
+// Route to get a specif product by ID
+productRouter.get('/:pid', async (req, res) => {
+  const { pid } = req.params
+
+  try {
+    const foundProduct = await ProductModel.findById(pid)
+
+    if (foundProduct)
+      res.status(200).send({ result: "OK", message: foundProduct })
+    else
+      res.status(404).send({ result: "Product Not Found", message: foundProduct })
+  }
+
+  catch (error) {
+    res.status(400).send({ error: `Error consulting the product: ${error}` })
+  }
 })
 
+// Route to add a new product
 productRouter.post('/', async (req, res) => {
-    const { title, description, stock, code, price, category } = req.body
+  const { code, title, description, category, team, price, stock } = req.body
 
-    try {
-        const respuesta = await productModel.create({
-            title, description, stock, code, price, category
-        })
+  try {
+    const addedProduct = await ProductModel.create({
+      code, title, description, category, team, price, stock
+    })
 
-        res.status(200).send({ resultado: 'OK', message: respuesta })
-    } catch (error) {
-        res.status(400).send({ error: `Error al crear producto: ${error}` })
-    }
+    res.status(200).send({ result: "OK", message: addedProduct })
+  }
+
+  catch (error) {
+    res.status(400).send({ error: `Error creating the product: ${error}` })
+  }
 })
 
-productRouter.update('/:id', async (req, res) => {
-    const { id } = req.params
-    const { title, description, stock, code, price, category, status } = req.body
-    try {
-        const respuesta = await productModel.findByIdAndUpdate(id, { title, description, stock, code, price, category, status })
-        if (prod)
-            res.status(200).send({ resultado: 'OK', message: respuesta })
-        else
-            res.status(404).send({ resultado: 'Not Found', message: respuesta })
-    } catch (error) {
-        res.status(400).send({ error: `Error al actualizar producto: ${error}` })
-    }
+// Route to update a product
+productRouter.put('/:pid', async (req, res) => {
+  const { pid } = req.params
+  const { code, title, description, category, team, price, stock, status } = req.body
+
+  try {
+    const updatedProduct = await ProductModel.findByIdAndUpdate(pid, {
+      code, title, description, category, team, price, stock, status
+    })
+
+    if (updatedProduct)
+      res.status(200).send({ result: "OK", message: updatedProduct })
+    else
+      res.status(404).send({ result: "Product Not Found", message: updatedProduct })
+  }
+
+  catch (error) {
+    res.status(400).send({ error: `Error updating the product: ${error}` })
+  }
 })
 
-productRouter.delete('/:id', async (req, res) => {
-    const { id } = req.params
+// Route to delete a product
+productRouter.delete('/:pid', async (req, res) => {
+  const { pid } = req.params
 
-    try {
-        const respuesta = await productModel.findByIdAndDelete(id)
-        if (prod)
-            res.status(200).send({ resultado: 'OK', message: respuesta })
-        else
-            res.status(404).send({ resultado: 'Not Found', message: respuesta })
-    } catch (error) {
-        res.status(400).send({ error: `Error al eliminar producto: ${error}` })
-    }
+  try {
+    const deletedProduct = await ProductModel.findByIdAndDelete(pid)
+
+    if (deletedProduct)
+      res.status(200).send({ result: "OK", message: deletedProduct })
+    else
+      res.status(404).send({ result: "Product Not Found", message: deletedProduct })
+  }
+
+  catch (error) {
+    res.status(400).send({ error: `Error deleting the product: ${error}` })
+  }
 })
 
 export default productRouter
