@@ -4,10 +4,10 @@ import { engine } from 'express-handlebars'
 import { Server } from 'socket.io'
 import { __dirname } from './path.js'
 import path from 'path'
-
-//import routerCart from './routes/cart.routes.js';
-//import { ProductManager } from './controllers/productManager.js';
+import messageModel from './models/messages.models.js';
 import productRouter from './routes/products.routes.js'
+import cartRouter from './routes/carts.routes.js'
+import messageRouter from './routes/messages.routes.js'
 import mongoose from 'mongoose'
 
 const PORT = 8080;
@@ -53,26 +53,22 @@ const mensajes = []
 io.on('connection', socket => {
 	console.log('Conexión con Socket.io');
 
-    const productManager = new ProductManager('./src/models/products.json'); 
+    socket.on('mensaje', async info => {
+        console.log(info);
+        mensajes.push(info);
+        io.emit('mensajes', mensajes);
 
-	socket.on('load', async () => {
-		const products = await productManager.getProducts();
-		socket.emit('products', products);
-	});
-
-	socket.on('newProduct', async product => {
-		await productManager.addProduct(product);
-		const products = await productManager.getProducts();
-		socket.emit('products', products);
-	});
-
-	socket.on('mensaje', info => {
-        console.log(info)
-        mensajes.push(info)
-        io.emit('mensajes', mensajes)
-    })
+        // Guardar el mensaje en la base de datos utilizando el modelo
+        try {
+            await messageModel.create({
+                user: info.user,
+                mensaje: info.mensaje
+            });
+        } catch (error) {
+            console.error("Error al guardar el mensaje en la base de datos:", error);
+        }
+    });
 });
-
 
 //Routes
 app.use('/static', express.static(path.join(__dirname, '/public')))
@@ -98,8 +94,9 @@ app.get('/static/chat', (req, res) => {
 	});
 });
 
-//app.use('/api/carts', routerCart);
+app.use('/api/carts', cartRouter)
 app.use('/api/products', productRouter)
+app.use('/api/messages', messageRouter)
 
 //Multer
 app.post('/upload', upload.single('product'), (req, res) => {

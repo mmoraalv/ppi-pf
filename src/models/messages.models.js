@@ -1,16 +1,19 @@
+// Importar los módulos necesarios
 import { Schema, model } from "mongoose";
 
+// Definir el esquema del mensaje
 const messageSchema = new Schema({
-    email: {
+    user: {
         type: String,
         required: true
     },
-    message: {
+    mensaje: {
         type: String,
         required: true
     }
-})
+});
 
-const messageModel = model('messages', messageSchema)
+// Crear el modelo de mensajes
+const messageModel = model("Message", messageSchema);
 
-export default messageModel
+export default messageModel;
